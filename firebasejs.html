@@ -1,0 +1,89 @@
+<html>
+
+<head>
+    <title>Save and load Image from the firebase storage JS</title>
+</head>
+<body>
+    </body>
+    <style>
+        img {
+            height: 200px;
+            width: 200px;
+            border: 2px solid black;
+        }
+    </style>
+    Image Name <input id="namebox" type="text"> <br><br> <img id="myimg"> <label id="upProgress"></label>
+    <br><br> <button id="select">Select Image</button>
+        <button id="upload">Upload Image</button>
+        <button id="retrieve">Retrieve Image</button>
+        <!---- FIRBASE LIBRARIES--->
+        <script src="https://www.gstatic.com/firebasejs/v7.20.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/v7.20.0/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/v7.20.0/firebase-database.js"></script> 
+       <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-storage.js"></script>
+        <script id="MainScript">
+            var ImgName, ImgUrl;
+            var files = [];
+            var reader = new FileReader();
+
+            // Import the functions you need from the SDKs you need
+            import { initializeApp } from "firebase/app";
+            import { getAnalytics } from "firebase/analytics";
+            // TODO: Add SDKs for Firebase products that you want to use
+            // https://firebase.google.com/docs/web/setup#available-libraries
+
+            // Your web app's Firebase configuration
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyBoGQM0byc3UMyROX87V0l5ypssq8KU-84",
+                authDomain: "calgary-help.firebaseapp.com",
+                projectId: "calgary-help",
+                storageBucket: "calgary-help.appspot.com",
+                messagingSenderId: "616909893479",
+                appId: "1:616909893479:web:df2bebece5cba94617c9c2",
+                measurementId: "G-VZ8G81FZ2E"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
+            document.getElementById("select").onclick = function (e) {
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.click();
+                input.onchange = e => {
+                    file = e.target.files;
+                    reader = new FileReader();
+                    reader.onload = function () {
+                        document.getElementById("mying").src = reader.result;
+                    }
+                    reader.readAsDataURL(file[0]);
+                    input.click();
+                }
+                document.getElementById('upload').onclick = function () {
+                    ImgName = document.getElementById('namebox').value;
+                    var uploadTask = firebase.storage().ref('Images/' + ImgName + ".png").put(files[0]);
+
+                    uploadTask.on('state_changed', function (snapshot) {
+                        var progress = (snapshot.bytesTranferred / snapshot.totalBytes) * 100;
+                        document.getElementById('UpProgress').innerHTML = 'Upload' + progress + '%';
+                    },
+                        function (error) {
+                            alert('error in saving the image');
+                        },
+                        function () {
+                            uploadTask.snapshot.ref.getDownloadURL().then(function(url){
+                                ImgUrl = url;
+                        });
+
+                    firebase.database().ref('Pictures/' + ImgName).set({
+                        Name: ImgName,
+                        Link: ImgUrl
+                    })
+                }
+            };
+}
+        </script>
+        </body>
+
+</html>
